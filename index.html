@@ -94,9 +94,14 @@
         </div>
         <button onclick="completeStep4()">Finish and Show Summary</button>
     </div>
-    
-    <!-- Step 5: Display Stats Table -->
+        <!-- Step 3: Dynamically Generated Stat Improvement Section -->
     <div class="step disabled" id="step5">
+        <h3>Select 2 Power Reductions</h3>
+        <div id="powerReduction"></div>
+        <button onclick="completeStep6()">Apply Reductions</button>
+    </div>
+    <!-- Step 5: Display Stats Table -->
+    <div class="step disabled" id="step6">
         <h3>Captain's Stats</h3>
         <table id="statsTable">
             <thead>
@@ -156,7 +161,8 @@
             shoot_bonus: 0,
             armor_bonus: 0,
             will_bonus: 0,
-            health_bonus: 0
+            health_bonus: 0,
+            activation_reduction: []
         };
         
         let selectedPowers = [];
@@ -243,6 +249,8 @@
         }       
         
         let maxCheckboxes = 0;
+        
+        let maxCheckboxesReduction = 2;
         
         let maxCheckboxesCore = 4;
         
@@ -387,16 +395,6 @@
             }
         }
         
-        function insertCharacter(originalString, charToInsert, index) {
-            // Check if the index is within bounds
-            if (index < 0 || index > originalString.length) {
-                throw new Error("Index out of bounds");
-            }
-
-            // Use substring to create a new string with the character inserted
-            const newString = originalString.substring(0, index) + charToInsert + originalString.substring(index);
-            return newString;
-}
         
         // Step 5: Finish and Show Summary
         function completeStep4() {
@@ -412,6 +410,7 @@
                 
                                 // Get the table body element
                 const tableBody = document.getElementById('table_body');
+                const powersReductionDiv = document.getElementById('powerReduction');
                 
                 // Iterate over the NodeList of checked checkboxes
                 checkboxesCore.forEach((checkbox) => {
@@ -440,6 +439,23 @@
                     powersDiv.append(label)
                     const hr = document.createElement('hr');
                     powersDiv.appendChild(hr);
+                    
+                    const checkboxInput = document.createElement('input');
+                    checkboxInput.type = 'checkbox';
+                    checkboxInput.name = 'powerReduction';
+                    checkboxInput.id = `reduction${i}`;
+                    checkboxInput.value = checkbox.value;
+                    checkboxInput.onclick = limitCheckboxesPowersReduction;
+                    checkboxInput.setAttribute('title',all_powers.get(checkbox.value))
+                    const label = document.createElement('label');
+                    label.htmlFor = `reduction${i}`;
+                    label.innerText = checkbox.value;
+
+                    const br = document.createElement('br');
+
+                    powersReductionDiv.appendChild(checkboxInput);
+                    powersReductionDiv.appendChild(label);
+                    powersReductionDiv.appendChild(br);
                 });
                 checkboxesAll.forEach((checkbox) => {
                     // Create a new table row element
@@ -467,6 +483,23 @@
                     powersDiv.append(label)
                     const hr = document.createElement('hr');
                     powersDiv.appendChild(hr);
+                    
+                    const checkboxInput = document.createElement('input');
+                    checkboxInput.type = 'checkbox';
+                    checkboxInput.name = 'powerReduction';
+                    checkboxInput.id = `reduction${i}`;
+                    checkboxInput.value = checkbox.value;
+                    checkboxInput.onclick = limitCheckboxesPowersReduction;
+                    checkboxInput.setAttribute('title',all_powers.get(checkbox.value))
+                    const label = document.createElement('label');
+                    label.htmlFor = `reduction${i}`;
+                    label.innerText = checkbox.value;
+
+                    const br = document.createElement('br');
+
+                    powersReductionDiv.appendChild(checkboxInput);
+                    powersReductionDiv.appendChild(label);
+                    powersReductionDiv.appendChild(br);
                 });
                 if (powersDiv.lastElementChild) {
                     powersDiv.removeChild(powersDiv.lastElementChild);
@@ -475,6 +508,14 @@
                 document.getElementById('step4').classList.add('disabled');
             }
             
+        }
+        
+        function limitCheckboxesPowersReduction() {
+            const checkboxes = document.querySelectorAll('input[name="powerReduction"]:checked');
+            if (checkboxes.length > maxCheckboxesReduction) {
+                this.checked = false;
+                alert(`You can only select up to ${maxCheckboxesReduction} core powers.`);
+            }
         }
         
         function limitCheckboxesPowersCore() {
@@ -584,6 +625,21 @@
             });
         }
         
+        // Step 5: Apply selected power reductions
+        function completeStep5() {
+            const selectedOptions = document.querySelectorAll('input[name="powerReduction"]:checked');
+            if (selectedOptions.length == maxCheckboxes) {
+                selectedOptions.forEach(option => {
+                    const { stat, value } = JSON.parse(option.value);
+                    updateStatsTable(stat, value);
+                });
+                document.getElementById('step4').classList.remove('disabled');
+                document.getElementById('step3').classList.add('disabled');
+                generatePowersSelection();
+            } else {
+                alert(`You must select ${maxCheckboxes} improvement(s).`);
+            }
+        }
         
         // Get power description based on power name
         function getPowerDescription(powerName) {
